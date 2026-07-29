@@ -51,4 +51,4 @@ jobs:
         run: |
           gdal-config --version
           gdal-config --libs
-          ruby -e "require 'gdal'; puts Gdal::Ruby::VERSION"
+          bundle exec ruby -Ilib -e "require 'gdal'; puts Gdal::Ruby::VERSION"
