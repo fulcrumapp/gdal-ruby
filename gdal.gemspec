@@ -23,7 +23,7 @@ Gem::Specification.new do |gem|
     "changelog_uri" => "https://github.com/fulcrumapp/gdal-ruby/blob/main/CHANGELOG.md",
     "homepage_uri" => gem.homepage,
     "source_code_uri" => "https://github.com/fulcrumapp/gdal-ruby",
-    "github_repo" => "ssh://github.com/fulcrumapp/gdal-ruby",
+    "github_repo" => "https://github.com/fulcrumapp/gdal-ruby",
     "allowed_push_host" => "https://rubygems.pkg.github.com/fulcrumapp"
   }
 

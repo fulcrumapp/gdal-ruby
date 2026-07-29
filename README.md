@@ -68,7 +68,7 @@ bundle exec rake spec
 ## Usage
 
 ```ruby
-require "gdal-ruby/ogr"
+require "gdal"
 
 puts Gdal::Ogr
   .create_geometry_from_wkt("POINT (30 10)")

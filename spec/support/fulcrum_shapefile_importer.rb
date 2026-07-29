@@ -50,7 +50,7 @@ module FulcrumShapefileImporter
 
   def schema_columns(layer)
     info = field_info(layer)
-    field_count(layer).times.map do |index|
+    info.get_field_count.times.map do |index|
       defn = info.get_field_defn(index)
       type =
         case defn.get_type
@@ -74,9 +74,30 @@ module FulcrumShapefileImporter
     raise "missing feature at index #{index}" if feature.nil?
 
     info = field_info(layer)
-    attrs = {}
+    attrs = read_attrs(feature, info)
+    attrs.merge("__geometry__" => geometry_json(feature))
+  end
 
-    field_count(layer).times do |field_index|
+  # Sequential scan matching Fulcrum's next_feature loop.
+  def read_features(path)
+    ds = open(path)
+    lyr = layer(ds)
+    lyr.reset_reading
+
+    info = field_info(lyr)
+    rows = []
+    while (feature = lyr.get_next_feature)
+      attrs = read_attrs(feature, info)
+      attrs["__geometry__"] = geometry_json(feature)
+      rows << attrs
+    end
+
+    rows
+  end
+
+  def read_attrs(feature, info)
+    attrs = {}
+    info.get_field_count.times do |field_index|
       defn = info.get_field_defn(field_index)
       value =
         case defn.get_type
@@ -91,56 +112,15 @@ module FulcrumShapefileImporter
         end
       attrs[defn.get_name] = value
     end
-
-    geom = feature.get_geometry_ref
-    geojson = nil
-    if geom
-      geom.flatten_to_2d
-      geojson = JSON.parse(geom.export_to_json)
-    end
-
-    attrs.merge("__geometry__" => geojson)
+    attrs
   end
 
-  # Sequential scan matching Fulcrum's next_feature loop.
-  def read_features(path)
-    ds = open(path)
-    lyr = layer(ds)
-    lyr.reset_reading
+  def geometry_json(feature)
+    geom = feature.get_geometry_ref
+    return nil unless geom
 
-    rows = []
-    while (feature = lyr.get_next_feature)
-      info = field_info(lyr)
-      attrs = {}
-
-      field_count(lyr).times do |field_index|
-        defn = info.get_field_defn(field_index)
-        value =
-          case defn.get_type
-          when Gdal::Ogr::OFTSTRING
-            text_value(feature.get_field_as_string(field_index))
-          when Gdal::Ogr::OFTINTEGER
-            feature.get_field_as_integer(field_index)
-          when Gdal::Ogr::OFTREAL
-            feature.get_field_as_double(field_index)
-          else
-            text_value(feature.get_field_as_string(field_index))
-          end
-        attrs[defn.get_name] = value
-      end
-
-      geom = feature.get_geometry_ref
-      if geom
-        geom.flatten_to_2d
-        attrs["__geometry__"] = JSON.parse(geom.export_to_json)
-      else
-        attrs["__geometry__"] = nil
-      end
-
-      rows << attrs
-    end
-
-    rows
+    geom.flatten_to_2d
+    JSON.parse(geom.export_to_json)
   end
 
   def text_value(input)
@@ -149,4 +129,3 @@ module FulcrumShapefileImporter
     input
   end
 end
-

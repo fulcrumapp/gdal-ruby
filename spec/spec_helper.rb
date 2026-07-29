@@ -4,7 +4,9 @@ require "json"
 require "pathname"
 require "gdal"
 
-FIXTURES = Pathname.new(__dir__).join("fixtures/shapefiles").expand_path
+module SpecSupport
+  FIXTURES = Pathname.new(__dir__).join("fixtures/shapefiles").expand_path
+end
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

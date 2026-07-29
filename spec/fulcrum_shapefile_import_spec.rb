@@ -5,7 +5,7 @@ require_relative "support/fulcrum_shapefile_importer"
 
 RSpec.describe "Fulcrum Import::Formats::Shapefile surface" do
   def shp(name)
-    FIXTURES.join(name, "#{File.basename(name)}.shp")
+    SpecSupport::FIXTURES.join(name, "#{File.basename(name)}.shp")
   end
 
   describe "constants used by Fulcrum schema mapping" do
@@ -30,13 +30,13 @@ RSpec.describe "Fulcrum Import::Formats::Shapefile surface" do
 
   describe "open + layer access" do
     it "opens a .shp path like Fulcrum file_path usage" do
-      ds = FulcrumShapefileImporter.open(FIXTURES.join("flat/points.shp"))
+      ds = FulcrumShapefileImporter.open(SpecSupport::FIXTURES.join("flat/points.shp"))
       expect(ds).not_to be_nil
       expect(FulcrumShapefileImporter.layer(ds).get_feature_count).to eq(2)
     end
 
     it "opens a directory datasource containing a shapefile" do
-      ds = FulcrumShapefileImporter.open(FIXTURES.join("points"))
+      ds = FulcrumShapefileImporter.open(SpecSupport::FIXTURES.join("points"))
       expect(FulcrumShapefileImporter.feature_count(FulcrumShapefileImporter.layer(ds))).to eq(2)
     end
   end

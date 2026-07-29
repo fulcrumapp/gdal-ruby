@@ -10,7 +10,7 @@ RSpec.describe "Ruby 3 SWIG allocator warnings" do
       require "gdal"
       g = Gdal::Ogr.create_geometry_from_wkt("POINT (1 2)")
       puts g.export_to_json
-      ds = Gdal::Ogr.open(#{FIXTURES.join('flat/points.shp').to_s.inspect})
+      ds = Gdal::Ogr.open(#{SpecSupport::FIXTURES.join('flat/points.shp').to_s.inspect})
       layer = ds.get_layer(0)
       f = layer.get_feature(0)
       puts f.get_field_as_string(0)

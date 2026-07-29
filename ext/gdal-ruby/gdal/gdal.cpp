@@ -4949,6 +4949,8 @@ _gdal_wrap_MajorObject_get_metadata_dict(int argc, VALUE *argv, VALUE self) {
         stringarray++;
       }
     }
+    /* GetMetadata_Dict duplicates via CSLDuplicate; free after Ruby conversion. */
+    CSLDestroy(result);
   }
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   return vresult;
@@ -5020,6 +5022,8 @@ _gdal_wrap_MajorObject_get_metadata_list(int argc, VALUE *argv, VALUE self) {
         rb_ary_push(vresult, nm);
       }
     }
+    /* GetMetadata_List duplicates via CSLDuplicate; free after Ruby conversion. */
+    CSLDestroy(result);
   }
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   return vresult;
