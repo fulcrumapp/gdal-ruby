@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Ruby ${{ matrix.ruby }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2', '3.3']
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        include:
+          - ruby: '3.3'
+            os: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GDAL (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgdal-dev gdal-bin gdal-data pkg-config
+
+      - name: Install GDAL (macOS)
+        if: runner.os == 'macOS'
+        run: brew install gdal pkg-config
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Compile and test
+        run: bundle exec rake spec
+
+      - name: Show linked GDAL
+        run: |
+          gdal-config --version
+          gdal-config --libs
+          ruby -e "require 'gdal'; puts Gdal::Ruby::VERSION"

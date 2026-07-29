@@ -1504,13 +1504,16 @@ SWIG_Ruby_InitRuntime(void)
 SWIGRUNTIME void
 SWIG_Ruby_define_class(swig_type_info *type)
 {
+  VALUE klass;
   char *klass_name = (char *) malloc(4 + strlen(type->name) + 1);
   sprintf(klass_name, "TYPE%s", type->name);
   if (NIL_P(_cSWIG_Pointer)) {
     _cSWIG_Pointer = rb_define_class_under(_mSWIG, "Pointer", rb_cObject);
-    rb_undef_method(CLASS_OF(_cSWIG_Pointer), "new");
+    /* Ruby 3.2+: avoid "undefining the allocator of T_DATA class" warnings */
+    rb_undef_alloc_func(_cSWIG_Pointer);
   }
-  rb_define_class_under(_mSWIG, klass_name, _cSWIG_Pointer);
+  klass = rb_define_class_under(_mSWIG, klass_name, _cSWIG_Pointer);
+  rb_undef_alloc_func(klass);
   free((void *) klass_name);
 }
 
@@ -1748,6 +1751,8 @@ SWIG_Ruby_SetModule(swig_module_info *pointer)
 {
   /* register a new class */
   VALUE cl = rb_define_class("swig_runtime_data", rb_cObject);
+  /* Ruby 3.2+: undef default allocator before first Data_Wrap_Struct */
+  rb_undef_alloc_func(cl);
   /* create and store the structure pointer to a global variable */
   swig_runtime_data_type_pointer = Data_Wrap_Struct(cl, 0, 0, pointer);
   rb_define_readonly_variable("$swig_runtime_data_type_pointer" SWIG_RUNTIME_VERSION SWIG_TYPE_TABLE_NAME, &swig_runtime_data_type_pointer);
