@@ -47,6 +47,9 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
 
+      - name: Verify compile and specs
+        run: bundle exec rake spec
+
       - name: Build gem
         run: |
           gem build gdal.gemspec
@@ -54,7 +57,7 @@ jobs:
 
       - name: Publish to GitHub Packages
         env:
-          GEM_HOST_API_KEY: Bearer ${{ secrets.GITHUB_TOKEN }}
+          GEM_HOST_API_KEY: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p ~/.gem
           printf '%s\n' '---' ":github: ${GEM_HOST_API_KEY}" > ~/.gem/credentials

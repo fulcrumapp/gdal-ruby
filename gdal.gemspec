@@ -28,10 +28,26 @@ Gem::Specification.new do |gem|
   }
 
   gem.files = Dir.chdir(__dir__) do
-    `git ls-files -z`.split("\x0").reject do |f|
-      f.start_with?("spec/", "test/", ".github/", ".travis.yml")
-    end
+    tracked =
+      if system("git", "rev-parse", "--is-inside-work-tree", out: File::NULL, err: File::NULL)
+        `git ls-files -z`.split("\x0")
+      else
+        Dir.glob("**/*", File::FNM_DOTMATCH)
+      end
+
+    tracked
+      .reject(&:empty?)
+      .reject { |f| f == "." || f == ".." || f.end_with?("/.") || f.end_with?("/..") }
+      .reject { |f| File.directory?(f) }
+      .reject do |f|
+        f.start_with?("spec/", "test/", ".github/", "tmp/", "pkg/") ||
+          f == ".travis.yml" ||
+          f.end_with?(".bundle", ".so", ".o", ".gem")
+      end
   end
+
+  raise "gdal.gemspec: gem.files is empty; cannot package a valid gem" if gem.files.empty?
+
   gem.require_paths = ["lib"]
   gem.extensions = [
     "ext/gdal-ruby/gdal/extconf.rb",

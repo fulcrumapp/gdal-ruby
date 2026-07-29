@@ -12,7 +12,8 @@ RSpec.describe "Ruby 3 SWIG allocator warnings" do
       puts g.export_to_json
       ds = Gdal::Ogr.open(#{SpecSupport::FIXTURES.join('flat/points.shp').to_s.inspect})
       layer = ds.get_layer(0)
-      f = layer.get_feature(0)
+      layer.set_next_by_index(0)
+      f = layer.get_next_feature
       puts f.get_field_as_string(0)
     RUBY
 
