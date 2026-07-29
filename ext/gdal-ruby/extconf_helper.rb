@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "mkmf"
+require "open3"
 require "shellwords"
 
 require_relative "ruby-2.2-patch"
@@ -13,9 +14,9 @@ module Gdal
       gdal_config = find_executable("gdal-config")
       raise "gdal-config not found. Install libgdal-dev / gdal and ensure it is on PATH." unless gdal_config
 
-      version = `#{gdal_config} --version`.strip
-      cflags = Shellwords.split(`#{gdal_config} --cflags`.strip)
-      libs = Shellwords.split(`#{gdal_config} --libs`.strip)
+      version = gdal_config_output(gdal_config, "--version").strip
+      cflags = Shellwords.split(gdal_config_output(gdal_config, "--cflags").strip)
+      libs = Shellwords.split(gdal_config_output(gdal_config, "--libs").strip)
 
       incdirs = cflags.select { |f| f.start_with?("-I") }.map { |f| f.delete_prefix("-I") }
       libdirs = libs.select { |f| f.start_with?("-L") }.map { |f| f.delete_prefix("-L") }
@@ -47,5 +48,13 @@ module Gdal
       puts "Using GDAL #{version} for #{target}"
       create_makefile(target)
     end
+
+    def gdal_config_output(gdal_config, *args)
+      output, status = Open3.capture2(gdal_config, *args)
+      raise "failed to run #{gdal_config} #{args.join(' ')}" unless status.success?
+
+      output
+    end
   end
 end
+

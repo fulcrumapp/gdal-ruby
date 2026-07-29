@@ -67,7 +67,7 @@ RSpec.describe "Fulcrum Import::Formats::Shapefile surface" do
     end
 
     it "reads attributes with the same field accessors Fulcrum uses" do
-      rows = FulcrumShapefileImporter.each_feature(path)
+      rows = FulcrumShapefileImporter.read_features(path)
       expect(rows.size).to eq(2)
 
       first = rows[0]
@@ -78,7 +78,7 @@ RSpec.describe "Fulcrum Import::Formats::Shapefile surface" do
     end
 
     it "exports geometry to GeoJSON after flatten_to_2d" do
-      rows = FulcrumShapefileImporter.each_feature(path)
+      rows = FulcrumShapefileImporter.read_features(path)
       geom = rows[0]["__geometry__"]
 
       expect(geom["type"]).to eq("Point")
@@ -88,24 +88,25 @@ RSpec.describe "Fulcrum Import::Formats::Shapefile surface" do
     end
 
     it "flattens 3D points to 2 coordinates for GeoUtils consumers" do
-      rows = FulcrumShapefileImporter.each_feature(path)
+      rows = FulcrumShapefileImporter.read_features(path)
       three_d = rows.find { |r| r["name"] == "beta" }
       expect(three_d["__geometry__"]["coordinates"].size).to eq(2)
     end
 
     it "force-encodes string fields as UTF-8 like Fulcrum text_value" do
-      rows = FulcrumShapefileImporter.each_feature(path)
+      rows = FulcrumShapefileImporter.read_features(path)
       note = rows[0]["note"]
       expect(note.encoding).to eq(Encoding::UTF_8)
       expect(note).to eq("café")
     end
 
-    it "supports random access get_feature by cursor index" do
+    it "supports index-based access via set_next_by_index" do
       second = FulcrumShapefileImporter.read_feature(layer, 1)
       expect(second["name"]).to eq("beta")
       expect(second["count"]).to eq(10)
       expect(second["score"]).to eq(2.25)
     end
+
   end
 
   describe "lines fixture" do
@@ -158,7 +159,7 @@ RSpec.describe "Fulcrum Import::Formats::Shapefile surface" do
   describe "end-to-end parity with Fulcrum next_feature loop" do
     it "walks every feature without raising and yields geometry + attrs" do
       %w[points lines polygons multipoint].each do |name|
-        rows = FulcrumShapefileImporter.each_feature(shp(name))
+        rows = FulcrumShapefileImporter.read_features(shp(name))
         expect(rows).not_to be_empty
         rows.each do |row|
           expect(row).to have_key("__geometry__")

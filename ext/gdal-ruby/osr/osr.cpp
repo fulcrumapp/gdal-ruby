@@ -2223,7 +2223,7 @@ SWIGINTERN int OSRSpatialReferenceShadow_GetUTMZone(OSRSpatialReferenceShadow *s
     int bNorth = FALSE;
     int nZone = OSRGetUTMZone( self, &bNorth );
     if( !bNorth )
-        nZone = -1 * ((nZone) < 0 ? -(nZone) : (nZone));
+        nZone = -1 * ABS(nZone);
     return nZone;
   }
 SWIGINTERN OGRErr OSRSpatialReferenceShadow_SetStatePlane(OSRSpatialReferenceShadow *self,int zone,int is_nad83=1,char const *unitsname="",double units=0.0){

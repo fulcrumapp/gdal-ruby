@@ -2175,10 +2175,12 @@ SWIGINTERN void GDALMajorObjectShadow_SetDescription(GDALMajorObjectShadow *self
     GDALSetDescription( self, pszNewDesc );
   }
 SWIGINTERN char **GDALMajorObjectShadow_GetMetadata_Dict(GDALMajorObjectShadow *self,char const *pszDomain=""){
-    return const_cast<char **>(GDALGetMetadata(self, pszDomain ));
+    /* GDAL 3+ returns CSLConstList. Duplicate so Ruby owns a mutable char**
+       without aliasing GDAL's const storage (avoids const_cast UB on mutate). */
+    return CSLDuplicate(GDALGetMetadata(self, pszDomain));
   }
 SWIGINTERN char **GDALMajorObjectShadow_GetMetadata_List(GDALMajorObjectShadow *self,char const *pszDomain=""){
-    return const_cast<char **>(GDALGetMetadata(self, pszDomain ));
+    return CSLDuplicate(GDALGetMetadata(self, pszDomain));
   }
 SWIGINTERN CPLErr GDALMajorObjectShadow_SetMetadata__SWIG_0(GDALMajorObjectShadow *self,char **papszMetadata,char const *pszDomain=""){
     return GDALSetMetadata( self, papszMetadata, pszDomain );
