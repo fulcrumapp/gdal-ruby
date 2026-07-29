@@ -31,8 +31,9 @@ Rake::ExtensionTask.new('gdal-ruby/gdalconst') do |ext|
 end
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
-  Rake::Task['compile'].invoke
-  spec.pattern = FileList['spec/**/*_spec.rb']
+  Rake::Task["compile"].invoke
+  spec.pattern = FileList["spec/**/*_spec.rb"]
+  spec.rspec_opts = "--require spec_helper --format documentation"
 end
 
-task :default => :spec
+task default: :spec
